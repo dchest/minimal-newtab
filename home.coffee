@@ -30,7 +30,8 @@ updateGmailCount = (id, url) ->
 addBookmark = (id, title, url) ->
    if url and title
        li = document.createElement "li"
-       li.innerHTML = "<a href='#{url}' id='bm_#{id}'>#{title}</a>"
+       title = title.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g, "&gt;")
+       li.innerHTML = "<a href=\"#{encodeURI(url)}\" id='bm_#{id}'>#{title}</a>"
        ul.appendChild li
        # Try Gmail 
        re = new RegExp(/https:\/\/mail\.google\.com\/?(a\/.+\/)?/)
