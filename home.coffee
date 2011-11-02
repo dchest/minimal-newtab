@@ -1,5 +1,6 @@
 ul = document.getElementById "bookmarks"
 store = window.localStorage
+gmailRe = new RegExp(/https:\/\/mail\.google\.com\/?(a\/.+\/)?/)
 
 setGmailCount = (id, count) ->
     klass = if count == "0" then "zero" else "count"
@@ -27,22 +28,28 @@ updateGmailCount = (id, url) ->
         xhr.open "GET", url, true
         xhr.send()
 
-addBookmark = (id, title, url) ->
-   if url and title
-       li = document.createElement "li"
-       title = title.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g, "&gt;")
-       li.innerHTML = "<a href=\"#{encodeURI(url)}\" id='bm_#{id}'>#{title}</a>"
-       ul.appendChild li
-       # Try Gmail 
-       re = new RegExp(/https:\/\/mail\.google\.com\/?(a\/.+\/)?/)
-       m = re.exec(url)
-       if m
-          gmail = "https://mail.google.com/"
-          gmail += if m[1] then m[1] else "mail/"
-          gmail += "feed/atom"
-          updateGmailCount("bm_" + id, gmail) if url.match(/https:\/\/mail\.google\.com.*/)
-          
+addBookmark = (id, title, url, indent) ->
+    li = document.createElement "li"
+    li.style.cssText = "padding-left: #{indent*2}em;"
+    title = title.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g, "&gt;")
+    if url
+        li.innerHTML = "<a href=\"#{encodeURI(url)}\" id='bm_#{id}'>#{title}</a>"
+        # Try Gmail
+        m = gmailRe.exec(url)
+        if m
+            gmail = "https://mail.google.com/"
+            gmail += if m[1] then m[1] else "mail/"
+            gmail += "feed/atom"
+            updateGmailCount("bm_" + id, gmail) if url.match(/https:\/\/mail\.google\.com.*/)
+    else
+        li.innerHTML = "&#x25bc; #{title}"
+    ul.appendChild li
+
+addBookmarks = (bookmarks, indent = 0) ->
+    for b in bookmarks
+        addBookmark b.id, b.title, b.url, indent
+        if not b.url
+            addBookmarks b.children, indent + 1
 
 chrome.bookmarks.getTree (bookmarks) ->
-    addBookmark b.id, b.title, b.url for b in bookmarks[0].children[0].children
-
+    addBookmarks bookmarks[0].children[0].children
