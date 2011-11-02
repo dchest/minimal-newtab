@@ -1,7 +1,8 @@
 (function() {
-  var addBookmark, setGmailCount, store, ul, updateGmailCount;
+  var addBookmark, addBookmarks, gmailRe, setGmailCount, store, ul, updateGmailCount;
   ul = document.getElementById("bookmarks");
   store = window.localStorage;
+  gmailRe = new RegExp(/https:\/\/mail\.google\.com\/?(a\/.+\/)?/);
   setGmailCount = function(id, count) {
     var countTemplate, klass, link, span;
     klass = count === "0" ? "zero" : "count";
@@ -37,33 +38,41 @@
       return xhr.send();
     }
   };
-  addBookmark = function(id, title, url) {
-    var gmail, li, m, re;
-    if (url && title) {
-      li = document.createElement("li");
-      title = title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  addBookmark = function(id, title, url, indent) {
+    var gmail, li, m;
+    li = document.createElement("li");
+    li.style.cssText = "padding-left: " + (indent * 2) + "em;";
+    title = title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if (url) {
       li.innerHTML = "<a href=\"" + (encodeURI(url)) + "\" id='bm_" + id + "'>" + title + "</a>";
-      ul.appendChild(li);
-      re = new RegExp(/https:\/\/mail\.google\.com\/?(a\/.+\/)?/);
-      m = re.exec(url);
+      m = gmailRe.exec(url);
       if (m) {
         gmail = "https://mail.google.com/";
         gmail += m[1] ? m[1] : "mail/";
         gmail += "feed/atom";
         if (url.match(/https:\/\/mail\.google\.com.*/)) {
-          return updateGmailCount("bm_" + id, gmail);
+          updateGmailCount("bm_" + id, gmail);
         }
       }
+    } else {
+      li.innerHTML = "&#x25bc; " + title;
     }
+    return ul.appendChild(li);
   };
-  chrome.bookmarks.getTree(function(bookmarks) {
-    var b, _i, _len, _ref, _results;
-    _ref = bookmarks[0].children[0].children;
+  addBookmarks = function(bookmarks, indent) {
+    var b, _i, _len, _results;
+    if (indent == null) {
+      indent = 0;
+    }
     _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      b = _ref[_i];
-      _results.push(addBookmark(b.id, b.title, b.url));
+    for (_i = 0, _len = bookmarks.length; _i < _len; _i++) {
+      b = bookmarks[_i];
+      addBookmark(b.id, b.title, b.url, indent);
+      _results.push(!b.url ? addBookmarks(b.children, indent + 1) : void 0);
     }
     return _results;
+  };
+  chrome.bookmarks.getTree(function(bookmarks) {
+    return addBookmarks(bookmarks[0].children[0].children);
   });
 }).call(this);
