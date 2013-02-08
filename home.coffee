@@ -50,6 +50,7 @@ addBookmarks = (bookmarks, indent = 0) ->
         addBookmark b.id, b.title, b.url, indent
         if not b.url
             addBookmarks b.children, indent + 1
+    return # so that generated js won't collect results
 
 chrome.bookmarks.getTree (bookmarks) ->
     addBookmarks bookmarks[0].children[0].children

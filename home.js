@@ -1,8 +1,12 @@
 (function() {
   var addBookmark, addBookmarks, gmailRe, setGmailCount, store, ul, updateGmailCount;
+
   ul = document.getElementById("bookmarks");
+
   store = window.localStorage;
+
   gmailRe = new RegExp(/https:\/\/mail\.google\.com\/?(a\/.+\/)?/);
+
   setGmailCount = function(id, count) {
     var countTemplate, klass, link, span;
     klass = count === "0" ? "zero" : "count";
@@ -15,6 +19,7 @@
       return link.innerHTML += " <span id='" + id + "_count'>" + countTemplate + "</span>";
     }
   };
+
   updateGmailCount = function(id, url) {
     var lastCount, xhr;
     lastCount = store.getItem(id + "_count");
@@ -38,6 +43,7 @@
       return xhr.send();
     }
   };
+
   addBookmark = function(id, title, url, indent) {
     var gmail, li, m;
     li = document.createElement("li");
@@ -55,24 +61,27 @@
         }
       }
     } else {
-      li.innerHTML = "&#x25bc; " + title;
+      li.innerHTML = "&#x25be; " + title;
     }
     return ul.appendChild(li);
   };
+
   addBookmarks = function(bookmarks, indent) {
-    var b, _i, _len, _results;
+    var b, _i, _len;
     if (indent == null) {
       indent = 0;
     }
-    _results = [];
     for (_i = 0, _len = bookmarks.length; _i < _len; _i++) {
       b = bookmarks[_i];
       addBookmark(b.id, b.title, b.url, indent);
-      _results.push(!b.url ? addBookmarks(b.children, indent + 1) : void 0);
+      if (!b.url) {
+        addBookmarks(b.children, indent + 1);
+      }
     }
-    return _results;
   };
+
   chrome.bookmarks.getTree(function(bookmarks) {
     return addBookmarks(bookmarks[0].children[0].children);
   });
+
 }).call(this);
