@@ -42,7 +42,7 @@ addBookmark = (id, title, url, indent) ->
             gmail += "feed/atom"
             updateGmailCount("bm_" + id, gmail) if url.match(/https:\/\/mail\.google\.com.*/)
     else
-        li.innerHTML = "&#x25bc; #{title}"
+        li.innerHTML = "&#x25be; #{title}"
     ul.appendChild li
 
 addBookmarks = (bookmarks, indent = 0) ->
@@ -50,6 +50,7 @@ addBookmarks = (bookmarks, indent = 0) ->
         addBookmark b.id, b.title, b.url, indent
         if not b.url
             addBookmarks b.children, indent + 1
+    return # so that generated js won't collect results
 
 chrome.bookmarks.getTree (bookmarks) ->
     addBookmarks bookmarks[0].children[0].children

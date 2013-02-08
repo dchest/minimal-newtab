@@ -14,5 +14,6 @@
   "permissions": [
     "bookmarks",
     "https://mail.google.com/"
-  ]
+  ],
+  "manifest_version": 2
 }
