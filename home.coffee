@@ -42,7 +42,7 @@ addBookmark = (id, title, url, indent) ->
             gmail += "feed/atom"
             updateGmailCount("bm_" + id, gmail) if url.match(/https:\/\/mail\.google\.com.*/)
     else
-        li.innerHTML = "&#x25bc; #{title}"
+        li.innerHTML = "&#x25be; #{title}"
     ul.appendChild li
 
 addBookmarks = (bookmarks, indent = 0) ->
